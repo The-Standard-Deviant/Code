@@ -1,0 +1,211 @@
+---
+title: "Hello, Tutorial!"
+output: 
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gapminder)
+library(nycflights13)
+```
+
+## Welcome!
+
+Hi! Thank you for deciding to join me for this Lunch \& Learn. I hope that in this time you'll take away a basic understanding of how to use R, how it can possibly be used in your workflow, and why it might be worth investing some time in using it as a tool.
+
+## Introduction
+
+Let's start with a quick introductory question:
+
+```{r q1, echo = FALSE}
+question("Who can learn to be a useR?",
+         answer("data scientists", correct = TRUE),
+         answer("clinicians", correct = TRUE),
+         answer("nurses", correct = TRUE),
+         answer("pharmacists", correct = TRUE),
+         answer("no one", message = "try again"),
+         allow_retry = TRUE
+         )
+```
+
+## DataFrame Basics
+
+### Introduction to DataFrames
+
+Great, now that we've gotten that out of the way, it's time to get into it.
+
+Let's start with the proto-typical, built-in dataset used in a variety of different examples.
+
+```{r data, exercise=TRUE}
+mtcars
+```
+
+Notice that `mtcars` is a dataset with `r ncol(mtcars)` different columns and `r nrow(mtcars)` different rows. In the R environment, this is called a `data frame` which can be defined as a list of different vectors of **equal** length. Vectors can be made very easy, using the `c()` function as well as the `<-` or assignment operator. 
+
+```{r vectors, exercise = TRUE}
+example <- c(1, 2, 3, 4)
+example
+```
+
+In this case, the `c()` function is **c**oncatenating or **combining** the different values into a single vector. 
+
+Note, that you can make vectors with a variety of different inputs; inputs can take different forms, they can be numeric (1), characters ("a", "bob", "jane"), and even factors/categories ("low", "medium","high"). If you want to the **class** or type of vector you are dealing with, you can use the `class` function; if you want to look at multiple classes within a dataframe i.e. look at the **structure** of the dataframe, you can use the `str()` function. Let's test this on the `iris` dataframe.
+
+```{r iris, exercise = TRUE}
+#looking at the first few rows or the "head" of the iris dataframe
+head(iris)
+```
+
+```{r input_1, exercise = TRUE}
+class(iris$Sepal.Length)
+```
+
+```{r input_2, exercise = TRUE}
+class(iris$Species)
+#note that with the factors, you can actually see the different distinct levels
+levels(iris$Species)
+```
+
+### Creating a Dataframe
+
+If you wanted to make a `data frame` out of a collection of vectors, you will need to use the `data.frame()` function. Given the three vectors below, give to make a DataFrame called `weird_collection`
+
+```{r dataframe, exercise = TRUE}
+peanut_butter <- c("crunchy", "smooth")
+milk <- c("skim", "two-percent", "full")
+height <- c("short", "tall")
+```
+
+```{r dataframe-hint}
+# Are the lengths all the same?
+```
+
+```{r dataframe-solution}
+peanut_butter <- c("crunchy", "smooth", NA)
+milk <- c("skim", "two-percent", "full")
+height <- c("short", "tall", NA)
+weird_collection <- data.frame(peanut_butter, milk, height)
+```
+
+### Where did the Output Go?
+
+Now, notice that while, we were able to make the `weird_collection` dataframe, we weren't able to actually see any output. To see the results of a command, you will either need to re-run the name of the dataframe you've just created `weird_collection`, or you can wrap the assignment in parenthesis `()`. Moreover, if you want to see the entirety of the dataframe you can use the `print()` or `View()` functions. The former will show the entirety of the dataset in the console, while the latter will open a new window that will allow you to view the entire dataset similar to an excel format.
+
+```{r prepare-dataframe_val, echo = FALSE}
+peanut_butter <- c("crunchy", "smooth", NA)
+milk <- c("skim", "two-percent", "full")
+height <- c("short", "tall", NA)
+weird_collection <- data.frame(peanut_butter, milk, height)
+```
+
+```{r dataframe_output, exercise.setup = "dataframe_val", exercise = TRUE}
+weird_collection
+```
+
+
+```{r dataframe_second, exercise = TRUE}
+(see_this_works_too <- data.frame(peanut_butter, milk, height))
+```
+
+### Tibbles
+
+Great! Now, that you have the basics down, let's talk about a special type of dataframe which is essential to the `tidyverse` framework: the tibble. Let's try using the `gapminder` dataframe.
+
+```{r gapminder, exercise = TRUE}
+gapminder
+```
+
+Notice that the `gapminder` dataframe prints differently than the other dataframes we've dealt with before. Tibbles were designed to be a "modern reimagining" of the dataframe; they're lazier and never change the type of the inputs (never strings to factors for instance). Additionally, tibbles react differently to the `print()` function.
+
+```{r show, exercise = TRUE}
+print(gapminder, n = 20)
+
+print(as.data.frame(gapminder), n = 20)
+```
+
+Learning the details on tibbles can be very helpful, but for now, just know that they're like dataframes... but just more improved.
+
+
+### Data Importing and Exporting
+
+There are multiple ways to import information into R. By default, you can use the `read.csv()`, `read.table()`, or `read.delim()` function from base R in order to read in a variety of different file formats. Within the tidyverse environment, there exists `read_csv`, `read_table`, and `read_delim` from the `readr` package which can make the reading-in process quicker. Additionally, you can use the `fread()` function from the `data.table` package to read in data extremely quickly.
+
+## Data Manipulation
+
+Okay, great we've done a quick overview on data in R, and now we will move into actually manipulating the information. 
+
+Within the `tidyverse` framework, most of the data manipulation can be performed using the `%>%` or pipe. For instance, if you want to filter a dataset based on a set criteria, you can use the `%>%` along with the `filter()` function. For instance:
+
+```{r filter, exercise = TRUE}
+#filter by a single value can be done using ==
+gapminder %>% filter(continent == "Americas")
+#filter by multiple values can be done using %in%
+gapminder %>% filter(continent %in% c("Americas", "Asia"))
+```
+
+What's really special about the `%>%` is that it can be combined to do a series of actions. This means that instead of doing multiple queries, you can combine a series of pipes in order to run a single query while doing a ton of different functions. Luckily, for the most part, the different functions are often named after the actions in which they are performing. e.g.
+
+* group_by() - grouping by variables
+* mean() - calculate the mean
+* filter() - filter based on this criteria
+* select() - select these specific columns within the dataset
+* distinct() - select the distinct values within the dataset
+* arrange() - arranges the order of the columns within a dataset
+* mutate() - create a variable within the dataset
+* summarise() - create a new variable within the dataset that can be a summary based on other variables
+* rename() - renames a column name into a new one
+* transmute() - mutate but only if you want to keep the new variables
+* n() - count
+
+```{r filter_and_select, exercise = TRUE}
+gapminder %>% 
+  group_by(continent) %>% 
+  summarise(MeanLifeExpectancy = mean(lifeExp)) %>%
+  arrange(desc(MeanLifeExpectancy))
+```
+
+```{r filter_and_select_2, exercise = TRUE}
+gapminder %>% 
+  group_by(continent) %>% 
+  mutate(MeanLifeExpectancy = mean(lifeExp)) %>%
+  arrange(desc(MeanLifeExpectancy))
+```
+
+```{r select_1, exercise = TRUE}
+gapminder %>% select(starts_with("con"))
+gapminder %>% select(ends_with("Exp"))
+```
+
+```{r flights, exercise = TRUE}
+flights %>% 
+  transmute(
+    dep_time,
+    hour = dep_time %/% 100,
+    minute = dep_time %% 100
+    )
+```
+
+```{r flights2, exercise = TRUE}
+flightsflights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    n = n(), 
+    mean_distance = mean(distance, na.rm = TRUE)
+    )
+```
+
+## RMarkdown
+
+
+Great! Now that you've finished this short and simple interview, let's move on to the RMarkdown portion of the L&L.
+
+Go to [this link](https://rmarkdown.rstudio.com/articles_intro.html) for a quick introduction for us to walk through.
+
+
+
+
+
